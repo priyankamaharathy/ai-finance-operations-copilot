@@ -3,6 +3,7 @@
 import { AnalyticsHeader } from "@/features/analytics/components/analytics-header";
 import { MetricGrid } from "@/features/analytics/components/metric-grid";
 import { useAnalytics } from "@/features/analytics/hooks/use-analytics";
+import { ExpenseTrendChart } from "@/features/analytics/components/expense-trend";
 
 export default function DashboardPage() {
   const {
@@ -37,8 +38,14 @@ export default function DashboardPage() {
       ) : null}
 
       {data ? (
-        <MetricGrid metrics={data.metrics} />
-      ) : null}
+  <>
+    <MetricGrid metrics={data.metrics} />
+
+    <ExpenseTrendChart
+      data={data.expenseTrend}
+    />
+  </>
+) : null}
     </div>
   );
 }
