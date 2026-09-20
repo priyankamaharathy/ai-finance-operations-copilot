@@ -3,6 +3,9 @@
 import { AnalyticsHeader } from "@/features/analytics/components/analytics-header";
 import { MetricGrid } from "@/features/analytics/components/metric-grid";
 import { useAnalytics } from "@/features/analytics/hooks/use-analytics";
+import { ExpenseTrendChart } from "@/features/analytics/components/expense-trend";
+import { ExpenseCategoryChart } from "@/features/analytics/components/expense-category";
+import { TopVendors } from "@/features/analytics/components/top-vendors";
 
 export default function DashboardPage() {
   const {
@@ -37,8 +40,18 @@ export default function DashboardPage() {
       ) : null}
 
       {data ? (
-        <MetricGrid metrics={data.metrics} />
-      ) : null}
+  <>
+    <MetricGrid metrics={data.metrics} />
+
+    <ExpenseTrendChart
+      data={data.expenseTrend}
+    />
+    <ExpenseCategoryChart
+    data={data.expenseCategories}
+  />
+   <TopVendors data={data.vendorSpend} />
+  </>
+) : null}
     </div>
   );
 }
