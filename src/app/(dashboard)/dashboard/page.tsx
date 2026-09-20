@@ -1,31 +1,39 @@
+"use client";
+
+import { useAnalytics } from "@/features/analytics/hooks/use-analytics";
+
 export default function DashboardPage() {
-  return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Overview
-        </h1>
+  const {
+    data,
+    isLoading,
+    isError,
+  } = useAnalytics();
 
-        <p className="mt-1 text-sm text-muted-foreground">
-          Monitor your financial operations and performance.
-        </p>
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        Loading analytics...
       </div>
+    );
+  }
 
-      <section
-        aria-labelledby="dashboard-placeholder"
-        className="rounded-xl border border-dashed p-12 text-center"
-      >
-        <h2
-          id="dashboard-placeholder"
-          className="text-sm font-medium"
-        >
-          Dashboard coming next
-        </h2>
+  if (isError) {
+    return (
+      <div className="p-6">
+        Failed to load analytics.
+      </div>
+    );
+  }
 
-        <p className="mt-1 text-sm text-muted-foreground">
-          Financial metrics and analytics will appear here.
-        </p>
-      </section>
+  return (
+    <div className="space-y-6 p-6">
+      <h1 className="text-2xl font-semibold">
+        Overview
+      </h1>
+
+      <pre className="overflow-auto rounded-lg border p-4 text-sm">
+        {JSON.stringify(data, null, 2)}
+      </pre>
     </div>
   );
 }
