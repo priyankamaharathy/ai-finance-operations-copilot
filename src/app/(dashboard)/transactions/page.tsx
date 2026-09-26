@@ -1,24 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+
+import {usePathname, useRouter, useSearchParams,} from "next/navigation";
 
 import { TransactionDetails } from "@/features/transactions/components/transaction-details";
 import { TransactionFilters } from "@/features/transactions/components/transaction-filters";
 import { TransactionTable } from "@/features/transactions/components/transaction-table";
 import { useTransactions } from "@/features/transactions/hooks/use-transactions";
+import { Pagination } from "@/components/shared/pagination";
 
-import type {
-  SortDirection,
-  Transaction,
-  TransactionFilters as TransactionFilterValues,
-  TransactionSortField,
-  TransactionStatus,
-} from "@/features/transactions/types/transaction";
+import type {SortDirection, Transaction, TransactionFilters as TransactionFilterValues, TransactionSortField, TransactionStatus,} from "@/features/transactions/types/transaction";
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -66,6 +58,15 @@ export default function TransactionsPage() {
     isError,
   } = useTransactions(page, filters);
 
+  useEffect(() => {
+  if (!data || page <= data.totalPages) {
+    return;
+  }
+  updateUrl({
+    page: String(data.totalPages),
+  });
+}, [data, page]);
+
   const updateUrl = (
     updates: Record<string, string | null>,
   ) => {
@@ -105,10 +106,16 @@ export default function TransactionsPage() {
   };
 
   const handlePageChange = (nextPage: number) => {
-    updateUrl({
-      page: String(nextPage),
-    });
-  };
+  if (!data) {
+    return;
+  }
+ if (nextPage < 1 || nextPage > data.totalPages) {
+    return;
+  }
+  updateUrl({
+    page: String(nextPage),
+  });
+};
 
   const handleSelectTransaction = (
     transaction: Transaction,
@@ -137,13 +144,13 @@ export default function TransactionsPage() {
     });
   };
   const handleClearFilters = () => {
-  updateUrl({
-    search: null,
-    status: null,
-    category: null,
-    page: "1",
-  });
-};
+    updateUrl({
+      search: null,
+      status: null,
+      category: null,
+      page: "1",
+    });
+  };
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -157,11 +164,11 @@ export default function TransactionsPage() {
         </p>
       </div>
 
-     <TransactionFilters
-  filters={filters}
-  onFiltersChange={handleFiltersChange}
-  onClearFilters={handleClearFilters}
-/>
+      <TransactionFilters
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        onClearFilters={handleClearFilters}
+      />
 
       {isLoading ? (
         <div
@@ -188,45 +195,13 @@ export default function TransactionsPage() {
             sortDirection={filters.sortDirection}
             onSort={handleSort}
           />
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">
-              {data.total} transactions
-            </p>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={page === 1}
-                onClick={() =>
-                  handlePageChange(page - 1)
-                }
-                className="rounded-md border px-3 py-2 text-sm transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Previous
-              </button>
-
-              <span
-                className="min-w-24 text-center text-sm text-muted-foreground"
-                aria-live="polite"
-              >
-                Page {data.page} of {data.totalPages}
-              </span>
-
-              <button
-                type="button"
-                disabled={
-                  page >= data.totalPages
-                }
-                onClick={() =>
-                  handlePageChange(page + 1)
-                }
-                className="rounded-md border px-3 py-2 text-sm transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
+          <Pagination
+            page={data.page}
+            totalPages={data.totalPages}
+            total={data.total}
+            pageSize={data.pageSize}
+            onPageChange={handlePageChange}
+          />
         </>
       ) : null}
 
