@@ -1,8 +1,9 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import type {
   TransactionFilters as TransactionFilterValues,
@@ -11,9 +12,8 @@ import type {
 
 interface TransactionFiltersProps {
   filters: TransactionFilterValues;
-  onFiltersChange: (
-    filters: TransactionFilterValues,
-  ) => void;
+  onFiltersChange: (filters: TransactionFilterValues) => void;
+  onClearFilters: () => void;
 }
 
 const statuses: {
@@ -38,7 +38,12 @@ const categories = [
 export function TransactionFilters({
   filters,
   onFiltersChange,
+   onClearFilters,
 }: TransactionFiltersProps) {
+  const hasActiveFilters =
+    Boolean(filters.search?.trim()) ||
+    (filters.status && filters.status !== "all") ||
+    (filters.category && filters.category !== "all");
   return (
     <div className="flex flex-col gap-3 md:flex-row">
       <div className="relative flex-1">
@@ -102,6 +107,16 @@ export function TransactionFilters({
           </option>
         ))}
       </select>
+       <Button
+        type="button"
+        variant="outline"
+        onClick={onClearFilters}
+        disabled={!hasActiveFilters}
+        className="shrink-0"
+      >
+        <X className="size-4" aria-hidden="true" />
+        Clear filters
+      </Button>
     </div>
   );
 }
