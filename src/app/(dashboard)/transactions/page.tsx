@@ -13,8 +13,10 @@ import { TransactionTable } from "@/features/transactions/components/transaction
 import { useTransactions } from "@/features/transactions/hooks/use-transactions";
 
 import type {
+  SortDirection,
   Transaction,
   TransactionFilters as TransactionFilterValues,
+  TransactionSortField,
   TransactionStatus,
 } from "@/features/transactions/types/transaction";
 
@@ -27,14 +29,14 @@ export default function TransactionsPage() {
     useState<Transaction | null>(null);
 
   const requestedPage = Number(
-  searchParams.get("page"),
-);
+    searchParams.get("page"),
+  );
 
-const page =
-  Number.isInteger(requestedPage) &&
-  requestedPage > 0
-    ? requestedPage
-    : 1;
+  const page =
+    Number.isInteger(requestedPage) &&
+      requestedPage > 0
+      ? requestedPage
+      : 1;
 
   const filters = useMemo<TransactionFilterValues>(
     () => ({
@@ -46,6 +48,14 @@ const page =
           | null) ?? "all",
       category:
         searchParams.get("category") ?? "all",
+      sortBy:
+        (searchParams.get("sortBy") as
+          | TransactionSortField
+          | undefined) ?? "date",
+      sortDirection:
+        (searchParams.get("sortDirection") as
+          | SortDirection
+          | undefined) ?? "desc",
     }),
     [searchParams],
   );
@@ -106,6 +116,35 @@ const page =
     setSelectedTransaction(transaction);
   };
 
+  const handleSort = (
+    field: TransactionSortField,
+  ) => {
+    const currentField = filters.sortBy ?? "date";
+
+    const currentDirection =
+      filters.sortDirection ?? "desc";
+
+    const nextDirection =
+      currentField === field &&
+        currentDirection === "asc"
+        ? "desc"
+        : "asc";
+
+    updateUrl({
+      sortBy: field,
+      sortDirection: nextDirection,
+      page: "1",
+    });
+  };
+  const handleClearFilters = () => {
+  updateUrl({
+    search: null,
+    status: null,
+    category: null,
+    page: "1",
+  });
+};
+
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div>
@@ -118,10 +157,11 @@ const page =
         </p>
       </div>
 
-      <TransactionFilters
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-      />
+     <TransactionFilters
+  filters={filters}
+  onFiltersChange={handleFiltersChange}
+  onClearFilters={handleClearFilters}
+/>
 
       {isLoading ? (
         <div
@@ -144,6 +184,9 @@ const page =
           <TransactionTable
             transactions={data.transactions}
             onSelect={handleSelectTransaction}
+            sortBy={filters.sortBy}
+            sortDirection={filters.sortDirection}
+            onSort={handleSort}
           />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

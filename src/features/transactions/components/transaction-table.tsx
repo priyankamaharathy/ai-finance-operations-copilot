@@ -7,13 +7,20 @@ import {
   CardContent,
 } from "@/components/ui/card";
 
-import type { Transaction } from "../types/transaction";
+import type {
+  SortDirection,
+  Transaction,
+  TransactionSortField,
+} from "../types/transaction";
 
 import { TransactionStatusBadge } from "./transaction-status";
 
 interface TransactionTableProps {
   transactions: Transaction[];
   onSelect: (transaction: Transaction) => void;
+  sortBy?: TransactionSortField;
+  sortDirection?: SortDirection;
+  onSort: (field: TransactionSortField) => void;
 }
 
 const currencyFormatter = new Intl.NumberFormat(
@@ -34,9 +41,26 @@ const dateFormatter = new Intl.DateTimeFormat(
   },
 );
 
+const getSortLabel = (
+  field: TransactionSortField,
+  sortBy?: TransactionSortField,
+  sortDirection?: SortDirection,
+) => {
+  if (sortBy !== field) {
+    return "Not sorted";
+  }
+
+  return sortDirection === "asc"
+    ? "Ascending"
+    : "Descending";
+};
+
 export function TransactionTable({
   transactions,
   onSelect,
+  sortBy,
+  sortDirection,
+  onSort,
 }: TransactionTableProps) {
   return (
     <Card>
@@ -46,20 +70,74 @@ export function TransactionTable({
             <thead>
               <tr className="border-b bg-muted/30">
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  Date
-                </th>
+  <button
+    type="button"
+    onClick={() => onSort("date")}
+    className="inline-flex items-center gap-1 hover:text-foreground"
+    aria-label={`Sort by date. Current: ${getSortLabel(
+      "date",
+      sortBy,
+      sortDirection,
+    )}`}
+  >
+    Date
+    <span aria-hidden="true">
+      {sortBy === "date"
+        ? sortDirection === "asc"
+          ? "↑"
+          : "↓"
+        : "↕"}
+    </span>
+  </button>
+</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   Description
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  Vendor
-                </th>
+  <button
+    type="button"
+    onClick={() => onSort("vendor")}
+    className="inline-flex items-center gap-1 hover:text-foreground"
+    aria-label={`Sort by vendor. Current: ${getSortLabel(
+      "vendor",
+      sortBy,
+      sortDirection,
+    )}`}
+  >
+    Vendor
+    <span aria-hidden="true">
+      {sortBy === "vendor"
+        ? sortDirection === "asc"
+          ? "↑"
+          : "↓"
+        : "↕"}
+    </span>
+  </button>
+</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   Category
                 </th>
-                <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                  Amount
-                </th>
+  <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+  <button
+    type="button"
+    onClick={() => onSort("amount")}
+    className="inline-flex items-center gap-1 hover:text-foreground"
+    aria-label={`Sort by amount. Current: ${getSortLabel(
+      "amount",
+      sortBy,
+      sortDirection,
+    )}`}
+  >
+    Amount
+    <span aria-hidden="true">
+      {sortBy === "amount"
+        ? sortDirection === "asc"
+          ? "↑"
+          : "↓"
+        : "↕"}
+    </span>
+  </button>
+</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   Status
                 </th>

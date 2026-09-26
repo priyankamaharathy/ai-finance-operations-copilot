@@ -52,12 +52,12 @@ export async function getTransactions(
           transaction.category === filters.category,
       );
   }
-  
+
   filteredTransactions.sort(
-  (a, b) =>
-    new Date(b.date).getTime() -
-    new Date(a.date).getTime(),
-);
+    (a, b) =>
+      new Date(b.date).getTime() -
+      new Date(a.date).getTime(),
+  );
 
   const total = filteredTransactions.length;
 
@@ -73,6 +73,31 @@ export async function getTransactions(
       startIndex,
       startIndex + pageSize,
     );
+
+  filteredTransactions.sort((a, b) => {
+    const sortBy = filters.sortBy ?? "date";
+    const direction = filters.sortDirection ?? "desc";
+
+    let comparison = 0;
+
+    if (sortBy === "date") {
+      comparison =
+        new Date(a.date).getTime() -
+        new Date(b.date).getTime();
+    }
+
+    if (sortBy === "amount") {
+      comparison = a.amount - b.amount;
+    }
+
+    if (sortBy === "vendor") {
+      comparison = a.vendor.localeCompare(b.vendor);
+    }
+
+    return direction === "asc"
+      ? comparison
+      : -comparison;
+  });
 
   return {
     transactions: paginatedTransactions,

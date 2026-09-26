@@ -7,6 +7,13 @@ export type TransactionType =
   | "expense"
   | "income";
 
+  export type TransactionSortField =
+  | "date"
+  | "amount"
+  | "vendor";
+
+export type SortDirection = "asc" | "desc";
+
 export interface Transaction {
   id: string;
   date: string;
@@ -23,6 +30,8 @@ export interface TransactionFilters {
   search?: string;
   status?: TransactionStatus | "all";
   category?: string | "all";
+  sortBy?: TransactionSortField;
+  sortDirection?: SortDirection;
 }
 
 export interface TransactionResponse {
