@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback} from "react";
 
 import {usePathname, useRouter, useSearchParams,} from "next/navigation";
 
@@ -58,41 +58,39 @@ export default function TransactionsPage() {
     isError,
   } = useTransactions(page, filters);
 
-  useEffect(() => {
+  const updateUrl = useCallback(
+  (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (
+        value === null ||
+        value === "" ||
+        value === "all" ||
+        (key === "page" && value === "1")
+      ) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+
+    const queryString = params.toString();
+
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
+  },
+  [pathname, router, searchParams],
+);
+
+useEffect(() => {
   if (!data || page <= data.totalPages) {
     return;
   }
+
   updateUrl({
     page: String(data.totalPages),
   });
-}, [data, page]);
-
-  const updateUrl = (
-    updates: Record<string, string | null>,
-  ) => {
-    const params = new URLSearchParams(
-      searchParams.toString(),
-    );
-
-    Object.entries(updates).forEach(
-      ([key, value]) => {
-        if (
-          value === null ||
-          value === "" ||
-          value === "all" ||
-          (key === "page" && value === "1")
-        ) {
-          params.delete(key);
-        } else {
-          params.set(key, value);
-        }
-      },
-    );
-
-    router.push(
-      `${pathname}?${params.toString()}`,
-    );
-  };
+}, [data, page, updateUrl]);
 
   const handleFiltersChange = (
     nextFilters: TransactionFilterValues,
