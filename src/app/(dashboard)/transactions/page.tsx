@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback} from "react";
-
-import {usePathname, useRouter, useSearchParams,} from "next/navigation";
-
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { usePathname, useRouter, useSearchParams, } from "next/navigation";
 import { TransactionDetails } from "@/features/transactions/components/transaction-details";
 import { TransactionFilters } from "@/features/transactions/components/transaction-filters";
 import { TransactionTable } from "@/features/transactions/components/transaction-table";
 import { useTransactions } from "@/features/transactions/hooks/use-transactions";
 import { Pagination } from "@/components/shared/pagination";
+import { TransactionTableSkeleton } from "@/features/transactions/components/transaction-table-skeleton";
 
-import type {SortDirection, Transaction, TransactionFilters as TransactionFilterValues, TransactionSortField, TransactionStatus,} from "@/features/transactions/types/transaction";
+import type { SortDirection, Transaction, TransactionFilters as TransactionFilterValues, TransactionSortField, TransactionStatus, } from "@/features/transactions/types/transaction";
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -56,41 +55,42 @@ export default function TransactionsPage() {
     data,
     isLoading,
     isError,
+    isPlaceholderData,
   } = useTransactions(page, filters);
 
   const updateUrl = useCallback(
-  (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
 
-    Object.entries(updates).forEach(([key, value]) => {
-      if (
-        value === null ||
-        value === "" ||
-        value === "all" ||
-        (key === "page" && value === "1")
-      ) {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
+      Object.entries(updates).forEach(([key, value]) => {
+        if (
+          value === null ||
+          value === "" ||
+          value === "all" ||
+          (key === "page" && value === "1")
+        ) {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      });
+
+      const queryString = params.toString();
+
+      router.push(queryString ? `${pathname}?${queryString}` : pathname);
+    },
+    [pathname, router, searchParams],
+  );
+
+  useEffect(() => {
+    if (!data || page <= data.totalPages) {
+      return;
+    }
+
+    updateUrl({
+      page: String(data.totalPages),
     });
-
-    const queryString = params.toString();
-
-    router.push(queryString ? `${pathname}?${queryString}` : pathname);
-  },
-  [pathname, router, searchParams],
-);
-
-useEffect(() => {
-  if (!data || page <= data.totalPages) {
-    return;
-  }
-
-  updateUrl({
-    page: String(data.totalPages),
-  });
-}, [data, page, updateUrl]);
+  }, [data, page, updateUrl]);
 
   const handleFiltersChange = (
     nextFilters: TransactionFilterValues,
@@ -104,16 +104,16 @@ useEffect(() => {
   };
 
   const handlePageChange = (nextPage: number) => {
-  if (!data) {
-    return;
-  }
- if (nextPage < 1 || nextPage > data.totalPages) {
-    return;
-  }
-  updateUrl({
-    page: String(nextPage),
-  });
-};
+    if (!data) {
+      return;
+    }
+    if (nextPage < 1 || nextPage > data.totalPages) {
+      return;
+    }
+    updateUrl({
+      page: String(nextPage),
+    });
+  };
 
   const handleSelectTransaction = (
     transaction: Transaction,
@@ -168,12 +168,7 @@ useEffect(() => {
         onClearFilters={handleClearFilters}
       />
 
-      {isLoading ? (
-        <div
-          className="h-96 animate-pulse rounded-xl border bg-muted/30"
-          aria-label="Loading transactions"
-        />
-      ) : null}
+      {isLoading ? <TransactionTableSkeleton /> : null}
 
       {isError ? (
         <div
@@ -186,13 +181,23 @@ useEffect(() => {
 
       {data ? (
         <>
-          <TransactionTable
-            transactions={data.transactions}
-            onSelect={handleSelectTransaction}
-            sortBy={filters.sortBy}
-            sortDirection={filters.sortDirection}
-            onSort={handleSort}
-          />
+          <div
+            className={
+              isPlaceholderData
+                ? "pointer-events-none opacity-60 transition-opacity"
+                : "transition-opacity"
+            }
+            aria-busy={isPlaceholderData}
+          >
+            <TransactionTable
+              transactions={data.transactions}
+              onSelect={handleSelectTransaction}
+              sortBy={filters.sortBy}
+              sortDirection={filters.sortDirection}
+              onSort={handleSort}
+            />
+          </div>
+
           <Pagination
             page={data.page}
             totalPages={data.totalPages}

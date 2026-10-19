@@ -1,9 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-
 import { getTransactions } from "../services/transaction-service";
-
 import type { TransactionFilters } from "../types/transaction";
 
 export function useTransactions(
@@ -20,8 +18,8 @@ export function useTransactions(
       getTransactions(
         page,
         10,
-        filters,
-      ),
+        filters,),
     staleTime: 1000 * 60 * 5,
+    placeholderData: (previousData) => previousData,
   });
 }
