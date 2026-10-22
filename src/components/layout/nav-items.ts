@@ -3,7 +3,7 @@ import {
   LayoutDashboard,
   Settings,
   Sparkles,
-  Users,
+  
   WalletCards,
 } from "lucide-react";
 
@@ -18,11 +18,7 @@ export const mainNavItems = [
     href: "/transactions",
     icon: WalletCards,
   },
-  {
-    title: "Vendors",
-    href: "/vendors",
-    icon: Users,
-  },
+
   {
     title: "Reports",
     href: "/reports",
