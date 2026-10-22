@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, Suspense} from "react";
 import { usePathname, useRouter, useSearchParams, } from "next/navigation";
 import { TransactionDetails } from "@/features/transactions/components/transaction-details";
 import { TransactionFilters } from "@/features/transactions/components/transaction-filters";
@@ -8,10 +8,9 @@ import { TransactionTable } from "@/features/transactions/components/transaction
 import { useTransactions } from "@/features/transactions/hooks/use-transactions";
 import { Pagination } from "@/components/shared/pagination";
 import { TransactionTableSkeleton } from "@/features/transactions/components/transaction-table-skeleton";
-
 import type { SortDirection, Transaction, TransactionFilters as TransactionFilterValues, TransactionSortField, TransactionStatus, } from "@/features/transactions/types/transaction";
 
-export default function TransactionsPage() {
+function TransactionsContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -218,5 +217,18 @@ export default function TransactionsPage() {
         }}
       />
     </div>
+  );
+}
+export default function TransactionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6 text-sm text-muted-foreground">
+          Loading transactions...
+        </div>
+      }
+    >
+      <TransactionsContent />
+    </Suspense>
   );
 }
